@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Designação de Circuitos</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Gerador de Designação</h1>
+            <p>Preencha os campos para criar e copiar a designação do circuito.</p>
+        </header>
+
+        <form id="designationForm">
+            <div class="form-group">
+                <label for="municipalitySearch">1. Pesquisar Município para CNL</label>
+                <div class="search-wrapper">
+                    <input type="text" id="municipalitySearch" placeholder="Digite o nome do município (ex: Belem)">
+                    <button type="button" id="searchBtn">🔍</button>
+                </div>
+                <select id="cnlSelect" class="output-field" required disabled>
+                    <option value="" selected>Aguardando pesquisa...</option>
+                </select>
+                <small id="searchError" class="error-message"></small>
+            </div>
+
+            <div class="form-group">
+                <label for="contractId">2. ID do Contrato</label>
+                <input type="text" id="contractId" placeholder="ex: 12345" required>
+            </div>
+
+            <div class="form-group">
+                <label for="circuitType">3. Tipo do Circuito</label>
+                <select id="circuitType" required>
+                    <option value="IP">Link IP</option>
+                    <option value="L2">Transporte L2</option>
+                </select>
+            </div>
+
+            <div class="form-group result-group">
+                 <label for="generatedDesignation">4. Designação Gerada</label>
+                <input type="text" id="generatedDesignation" placeholder="O resultado aparecerá aqui..." readonly>
+                 <button type="submit" id="generateBtn">Gerar e Copiar</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
