@@ -107,16 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Copiando para a área de transferência
             await navigator.clipboard.writeText(finalDesignation);
 
-            // Feedback visual para o usuário
-            const originalButtonText = generateBtn.textContent;
-            generateBtn.textContent = '✅ Copiado!';
-            generateBtn.style.backgroundColor = 'var(--success-color)';
-            
-            setTimeout(() => {
-                generateBtn.textContent = originalButtonText;
-                generateBtn.style.backgroundColor = 'var(--primary-color)';
-            }, 2000);
-
         } catch (error) {
             console.error('Falha ao gerar designação:', error);
             generatedDesignationInput.value = 'Erro ao gerar. Verifique a API.';
