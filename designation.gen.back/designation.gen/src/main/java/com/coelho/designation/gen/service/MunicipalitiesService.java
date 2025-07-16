@@ -20,6 +20,16 @@ public class MunicipalitiesService {
 
     private MunicipalitiesRepository municipalitiesRepository;
 
+    public ResponseEntity<?> gettAllMunicipalities(){
+        List<Municipalities> foundMunicipalities = municipalitiesRepository.findAll();
+
+        if(foundMunicipalities.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(foundMunicipalities);
+    }
+
     @Transactional
     public ResponseEntity<?> registerMunicipalitiesList(List<Municipalities> municipalitiesList){
         for (Municipalities m : municipalitiesList){
