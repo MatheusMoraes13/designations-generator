@@ -123,6 +123,8 @@ select:disabled {
      font-weight: bold;
      text-align: center;
      margin-bottom: 10px;
+     background-color: var(--border-color);
+     border-color: var(--text-color);
 }
 
 #generateBtn {
@@ -133,17 +135,20 @@ select:disabled {
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s;
     color: var(--primary-color);
     background-color: var(--container-bg);
     border: 1px solid var(--primary-color);
+    transition: 0.5s;
 }
 
-#generateBtn:hover {
+
+#generateBtn:active {
     background-color: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
-    color: var(--text-color);
+    color: var(--background-color);
+    border: 1px solid var(--primary-color);
+    transition-duration: 0s;
 }
+
 
 .error-message {
     color: var(--error-color);
@@ -151,21 +156,4 @@ select:disabled {
     margin-top: 5px;
     display: block;
     min-height: 1.2em;
-}
-
-@keyframes blinkSuccess {
-  0%, 100% {
-    background-color: var(--container-bg);
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-  }
-  50% {
-    background-color: var(--success-color);
-    color: white;
-    border-color: var(--success-color);
-  }
-}
-
-.blink {
-  animation: blinkSuccess 0.5s ease-in-out;
 }

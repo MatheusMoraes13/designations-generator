@@ -21,65 +21,47 @@ public class MunicipalitiesService {
     private MunicipalitiesRepository municipalitiesRepository;
 
     @Transactional
-    public ResponseEntity<?> registerMunicipalities(Municipalities municipalities){
-        municipalities.setName(removeAccents(municipalities.getName()));
-        municipalities.setAcronym(municipalities.getAcronym().toUpperCase().replaceAll("\\s+", ""));
-
-        try {
-            Optional<Municipalities> foundMunicipalities = municipalitiesRepository.findByName(municipalities.getName());
-            if (foundMunicipalities.isPresent() && municipalitiesRepository.existsByAcronym(municipalities.getAcronym())){
-                    Municipalities municipalitiesToUpdate = foundMunicipalities.get();
-
-                    municipalitiesToUpdate.setName(municipalities.getName());
-                    municipalitiesToUpdate.setAcronym(municipalities.getAcronym());
-
-                    municipalitiesRepository.save(municipalitiesToUpdate);
-
-            }
-            municipalitiesRepository.save(municipalities);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-        return ResponseEntity.ok().body("Município " + municipalities.getName() + " cadastrado com sucesso!");
-    }
-
-    @Transactional
     public ResponseEntity<?> registerMunicipalitiesList(List<Municipalities> municipalitiesList){
         for (Municipalities m : municipalitiesList){
             m.setName(removeAccents(m.getName()));
+            m.setAcronym(m.getAcronym().toUpperCase().replaceAll("\\s+", ""));
         }
 
         try {
             for (Municipalities m : municipalitiesList){
-                Optional<Municipalities> foundMunicipalities = municipalitiesRepository.findByName(m.getName());
-                if (foundMunicipalities.isPresent() && municipalitiesRepository.existsByAcronym(m.getAcronym())){
-                    Municipalities municipalitiesToUpdate = foundMunicipalities.get();
+                List<Municipalities> foundList = municipalitiesRepository.findByName(m.getName());
+
+                boolean acronymExists = municipalitiesRepository.existsByAcronym(m.getAcronym());
+
+                if (!foundList.isEmpty() && acronymExists){
+                    Municipalities municipalitiesToUpdate = foundList.get(0);
 
                     municipalitiesToUpdate.setName(m.getName());
                     municipalitiesToUpdate.setAcronym(m.getAcronym());
 
                     municipalitiesRepository.save(municipalitiesToUpdate);
-
+                } else {
+                    municipalitiesRepository.save(m);
                 }
-                municipalitiesRepository.save(m);
             }
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+
         return ResponseEntity.ok().body("Lista de municípios cadastrada com sucesso!");
     }
+
 
     public ResponseEntity<?> findMunicipalitiesByName(SearchMunicipalitiesDTO searchMunicipalities){
         String searchName = removeAccents(searchMunicipalities.name());
 
         try {
-            Optional<Municipalities> foundMunicipalities = municipalitiesRepository.findByName(searchName);
-            List<Municipalities> foundMunicipalitiesList = foundMunicipalities.stream().toList();
+            List<Municipalities> foundMunicipalitiesList = municipalitiesRepository.findByName(searchName);
 
-            if(foundMunicipalities.isEmpty()){
+            if(foundMunicipalitiesList.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Nenhum município com o nome \"" + searchMunicipalities.name() + "\" encontrado.");
             } else {
-                return ResponseEntity.ok(foundMunicipalities);
+                return ResponseEntity.ok(foundMunicipalitiesList);
             }
 
         } catch (RuntimeException e) {
