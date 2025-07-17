@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('designationForm');
     const generateBtn = document.getElementById('generateBtn');
 
-    const API_BASE_URL = 'http://localhost:8080'; // Altere se sua API rodar em outra porta
+    const API_BASE_URL = 'http://127.0.0.1:8080'; // Altere se sua API rodar em outra porta
 
     // --- Funções ---
 

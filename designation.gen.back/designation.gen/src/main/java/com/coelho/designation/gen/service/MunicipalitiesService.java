@@ -20,10 +20,21 @@ public class MunicipalitiesService {
 
     private MunicipalitiesRepository municipalitiesRepository;
 
+    public ResponseEntity<?> gettAllMunicipalities(){
+        List<Municipalities> foundMunicipalities = municipalitiesRepository.findAll();
+
+        if(foundMunicipalities.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(foundMunicipalities);
+    }
+
     @Transactional
     public ResponseEntity<?> registerMunicipalitiesList(List<Municipalities> municipalitiesList){
         for (Municipalities m : municipalitiesList){
             m.setName(removeAccents(m.getName()));
+            m.setAcronym(m.getAcronym().toUpperCase().replaceAll("\\s+", ""));
         }
 
         try {
@@ -32,10 +43,12 @@ public class MunicipalitiesService {
                 municipalitiesRepository.save(m);
             }
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+
         return ResponseEntity.ok().body("Lista de municípios cadastrada com sucesso!");
     }
+
 
     public ResponseEntity<?> findMunicipalitiesByName(SearchMunicipalitiesDTO searchMunicipalities){
         String searchName = removeAccents(searchMunicipalities.name());
