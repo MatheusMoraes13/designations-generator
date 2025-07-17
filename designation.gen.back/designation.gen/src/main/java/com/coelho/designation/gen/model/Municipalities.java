@@ -2,10 +2,12 @@ package com.coelho.designation.gen.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity(name = "tab_municipios")
 @Getter @Setter
+@NoArgsConstructor
 public class Municipalities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
