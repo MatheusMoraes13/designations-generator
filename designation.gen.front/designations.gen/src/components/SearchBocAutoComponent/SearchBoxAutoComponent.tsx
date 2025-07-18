@@ -3,6 +3,8 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import type { Municipalities } from '../../data/MunicipalitiesData';
 import { GetAllMunicipalities } from '../../functions/MunicipalitiesAPIFunctions';
+import { SetCachedSelectedMUnicipalities } from '../../functions/MunicipalitiesAPIFunctions';
+import { GetCachedSelectedMunicipalities } from '../../functions/MunicipalitiesAPIFunctions';
 
 export default function SearchBoxAutoComponent() {
   const [options, setOptions] = useState<Municipalities[]>([]);
@@ -31,7 +33,8 @@ export default function SearchBoxAutoComponent() {
       value={value}
       onChange={(event: any, newValue: Municipalities | null) => {
         setValue(newValue);
-        console.log(newValue); 
+        SetCachedSelectedMUnicipalities(newValue);
+        console.log(GetCachedSelectedMunicipalities());
       }}
       getOptionKey={(option) => option.id}  
       options={options}
