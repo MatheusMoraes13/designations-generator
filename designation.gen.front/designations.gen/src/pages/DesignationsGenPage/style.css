@@ -21,3 +21,16 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+.search-cnl-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.search-cnl-container h3 {
+    margin: 0;
+    color: var(--text-color);
+    display: flex;
+}

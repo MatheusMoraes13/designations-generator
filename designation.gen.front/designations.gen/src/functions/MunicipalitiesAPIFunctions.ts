@@ -28,7 +28,7 @@ export const GetCachedSelectedMunicipalities = () => cachedSelectedMunicipality;
 
 export const GetAllMunicipalities = async () => {
   try {
-    const response = await axios.get('{BaseURL}/municipalities');
+    const response = await axios.get(`${BaseURL}/municipalities`);
     return response.data;
   } catch (error: any) {
     console.error('Failed to fetch municipalities:', error);

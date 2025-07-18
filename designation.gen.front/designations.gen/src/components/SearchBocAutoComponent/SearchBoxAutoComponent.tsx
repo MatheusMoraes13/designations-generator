@@ -6,10 +6,17 @@ import { GetAllMunicipalities } from '../../functions/MunicipalitiesAPIFunctions
 import { SetCachedSelectedMUnicipalities } from '../../functions/MunicipalitiesAPIFunctions';
 import { GetCachedSelectedMunicipalities } from '../../functions/MunicipalitiesAPIFunctions';
 
-export default function SearchBoxAutoComponent() {
+
+
+interface SearchBoxProps {
+  value: Municipalities | null;
+  onChange: (newValue: Municipalities | null) => void;
+}
+
+
+export default function SearchBoxAutoComponent({ value, onChange }: SearchBoxProps) {
   const [options, setOptions] = useState<Municipalities[]>([]);
   const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState<Municipalities | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,14 +39,14 @@ export default function SearchBoxAutoComponent() {
     <Autocomplete
       value={value}
       onChange={(event: any, newValue: Municipalities | null) => {
-        setValue(newValue);
+        onChange(newValue);
         SetCachedSelectedMUnicipalities(newValue);
         console.log(GetCachedSelectedMunicipalities());
       }}
       getOptionKey={(option) => option.id}  
       options={options}
       loading={loading}
-      getOptionLabel={(option) => option.name}
+      getOptionLabel={(option) => option.name + " - " + option.acronym }
       sx={{ width: 300 }}
       slotProps={{
         paper: {
@@ -49,6 +56,7 @@ export default function SearchBoxAutoComponent() {
             mt: 1,
             boxShadow: '0px 4px 10px rgba(0,0,0,0.5)',
             border: 'var(--border-color) solid 1px',
+            borderRadius: '4px',
           }
         },
         listbox: {
@@ -75,7 +83,7 @@ export default function SearchBoxAutoComponent() {
           }
         }
       }}
-      renderInput={(params) => <TextField {...params} label="Cidade" sx={{
+      renderInput={(params) => <TextField {...params} label="Pesquisar Cidade" sx={{
             '& .MuiOutlinedInput-input': {
               color: 'var(--text-color)',
             },
