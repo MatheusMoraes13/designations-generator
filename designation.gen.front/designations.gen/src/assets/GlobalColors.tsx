@@ -1,3 +1,6 @@
+import { createGlobalStyle } from 'styled-components';
+
+const GlobaLColors = createGlobalStyle`
 :root {
     --primary-color: #6ea8fe;
     --primary-hover: #6ea8fe;
@@ -9,4 +12,6 @@
     --error-color: #ea868f;
     --success-color: #75b798;
     --border-color: #495057;
-}
+}`;
+
+export default GlobaLColors;

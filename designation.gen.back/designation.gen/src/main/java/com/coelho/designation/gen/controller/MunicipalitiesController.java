@@ -16,6 +16,11 @@ public class MunicipalitiesController {
 
     MunicipalitiesService municipalitiesService;
 
+    @GetMapping
+    public ResponseEntity<?> getAllMunicipalities(){
+        return municipalitiesService.gettAllMunicipalities();
+    }
+
     @PostMapping("/list")
     public ResponseEntity<?> registerMunicipalitiesList(@RequestBody List<Municipalities> municipalitiesList){
         return municipalitiesService.registerMunicipalitiesList(municipalitiesList);

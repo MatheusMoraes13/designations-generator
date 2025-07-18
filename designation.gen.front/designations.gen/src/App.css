@@ -5,6 +5,19 @@
   text-align: center;
 }
 
+:root{
+  --primary-color: #6ea8fe;
+  --primary-hover: #6ea8fe;
+  --background-color: #171b1d;
+  --container-bg: #212529;
+  --text-color: #ffffff;
+  --label-color: #ffffff;
+  --border-color: #ccc;
+  --error-color: #ea868f;
+  --success-color: #75b798;
+  --border-color: #495057;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

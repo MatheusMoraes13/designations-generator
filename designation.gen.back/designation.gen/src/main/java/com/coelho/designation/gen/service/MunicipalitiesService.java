@@ -13,6 +13,7 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -37,13 +38,13 @@ public class MunicipalitiesService {
             m.setAcronym(m.getAcronym().toUpperCase().replaceAll("\\s+", ""));
         }
 
-        try {
-            for (Municipalities m : municipalitiesList){
-                List<Municipalities> foundMunicipalities = municipalitiesRepository.findByName(m.getName());
-                municipalitiesRepository.save(m);
-            }
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        List<Municipalities> uniqueMunicipalitiesList = municipalitiesList.stream()
+                .distinct()
+                .toList();
+
+        for (Municipalities m : uniqueMunicipalitiesList){
+            List<Municipalities> foundMunicipalities = municipalitiesRepository.findByName(m.getName());
+            municipalitiesRepository.save(m);
         }
 
         return ResponseEntity.ok().body("Lista de municípios cadastrada com sucesso!");

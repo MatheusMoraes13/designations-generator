@@ -7,18 +7,16 @@ import { GetAllMunicipalities } from '../../functions/MunicipalitiesAPIFunctions
 export default function SearchBoxAutoComponent() {
   const [options, setOptions] = useState<Municipalities[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [value, setValue] = useState<Municipalities | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      setError(null);
       try {
         const data = await GetAllMunicipalities();
-        setOptions(data); 
+        setOptions(Array.isArray(data) ? data : []); 
       } catch (err) {
         console.error("Falha ao buscar municípios:", err);
-        setError(err as Error);
       } finally {
         setLoading(false);
       }
@@ -28,40 +26,83 @@ export default function SearchBoxAutoComponent() {
   }, []);
 
   return (
+    <>
     <Autocomplete
-      disablePortal
+      value={value}
+      onChange={(event: any, newValue: Municipalities | null) => {
+        setValue(newValue);
+        console.log(newValue); 
+      }}
+      getOptionKey={(option) => option.id}  
       options={options}
       loading={loading}
       getOptionLabel={(option) => option.name}
       sx={{ width: 300 }}
+      slotProps={{
+        paper: {
+          sx: {
+            bgcolor: 'var(--container-bg)',
+            color: 'var(--text-color)',
+            mt: 1,
+            boxShadow: '0px 4px 10px rgba(0,0,0,0.5)',
+            border: 'var(--border-color) solid 1px',
+          }
+        },
+        listbox: {
+          sx: {
+            maxHeight: 200,
+            '& .MuiAutocomplete-option': {
+            padding: '8px 16px',
+            '&:not(:last-child)': {
+              borderBottom: '1px solid #2b3035ff',
+            },
+            '&[aria-selected="true"]': {
+              backgroundColor: 'var(--backgound-color)',
+            },
+            '&:hover': {
+              backgroundColor: 'var(--primary-color)',
+                color: 'var(--text-color)',
+              },
+            }
+          }
+        },
+        popper: {
+          sx: {
+            zIndex: 1400,
+          }
+        }
+      }}
       renderInput={(params) => <TextField {...params} label="Cidade" sx={{
             '& .MuiOutlinedInput-input': {
-              color: '#ffffff',
+              color: 'var(--text-color)',
             },
             '& .MuiSvgIcon-root': {
-              color: '#ced4da',
+              color: 'var(--border-color)',
             },
             '& .MuiOutlinedInput-root': {
-              backgroundColor: '#212529', // Fundo escuro do input
+              backgroundColor: 'var(--container-bg)',
               '& fieldset': {
-                borderColor: '#495057', // Borda cinza sutil
+                borderColor: 'var(--border-color)',
               },
               '&:hover fieldset': {
-                borderColor: '#6ea8fe',
+                borderColor: 'var(--primary-color)',
               },
               '&.Mui-focused fieldset': {
-                borderColor: '#6ea8fe',
+                borderColor: 'var(--primary-color)',
               },
             },
             '& .MuiInputLabel-root': {
-              color: '#ced4da', // Cor do label
+              color: 'var(--text-color)',
             },
             '& .MuiInputLabel-root.Mui-focused': {
-                color: '#6ea8fe',
+                color: 'var(--primary-color)',
             },
           }}
+          
         
         />}
     />
+    </>
   );
 }
+
