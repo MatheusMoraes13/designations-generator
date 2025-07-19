@@ -1,23 +1,25 @@
 import TextField from '@mui/material/TextField';
+import type { DesignationResponse } from '../../data/DesignationsData';
 
-interface InputBoxProps {
+interface OutputBoxProps {
+  designation: DesignationResponse | null;
   label: string;
   placeholder: string;
-  value?: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export default function InputBox (InputBoxProps: InputBoxProps) {
+export default function OutputDesignationBox(OutpuBoxProps: OutputBoxProps) {
   return (
-    <div>
-      <TextField
-          required
-          id="outlined-required"
-          value={InputBoxProps.value}
-          onChange={InputBoxProps.onChange}
-          label= {InputBoxProps.label}
-          placeholder = {InputBoxProps.placeholder}
+    
+      <div>
+        <TextField
+          id="ReadOnlyOutput"
+          label={OutpuBoxProps.label}
+          placeholder={OutpuBoxProps.placeholder}
+          value={OutpuBoxProps?.designation?.designation?? ''}
           slotProps={{
+            input: {
+              readOnly: true,
+            },
             inputLabel: {
               shrink: true,
             }
@@ -32,8 +34,8 @@ export default function InputBox (InputBoxProps: InputBoxProps) {
               color: 'var(--text-color)',
             },
             '& .MuiOutlinedInput-root': {
-              backgroundColor: 'var(--container-bg)',
               height: '45px',
+              backgroundColor: 'var(--container-bg)',
               '& fieldset': {
                 borderColor: 'var(--border-color)',
               },
@@ -52,6 +54,6 @@ export default function InputBox (InputBoxProps: InputBoxProps) {
             },
           }}
         />
-    </div>
+      </div>
   );
-};
+}

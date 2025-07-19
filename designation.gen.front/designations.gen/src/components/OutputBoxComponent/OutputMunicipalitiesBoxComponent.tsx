@@ -3,16 +3,19 @@ import type { Municipalities } from '../../data/MunicipalitiesData';
 
 interface OutputBoxProps {
   municipality: Municipalities | null;
+  label: string;
+  placeholder: string;
 }
 
-export default function OutputBox({ municipality }: OutputBoxProps) {
+export default function OutputCNLBox(OutpuBoxProps: OutputBoxProps) {
   return (
     
       <div>
         <TextField
           id="ReadOnlyOutput"
-          label="CNL"
-          value={municipality?.acronym ?? 'Município'}
+          label={OutpuBoxProps.label}
+          placeholder={OutpuBoxProps.placeholder}
+          value={OutpuBoxProps?.municipality?.acronym ?? ''}
           slotProps={{
             input: {
               readOnly: true,
@@ -31,6 +34,7 @@ export default function OutputBox({ municipality }: OutputBoxProps) {
               color: 'var(--text-color)',
             },
             '& .MuiOutlinedInput-root': {
+              height: '45px',
               backgroundColor: 'var(--container-bg)',
               '& fieldset': {
                 borderColor: 'var(--border-color)',

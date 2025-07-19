@@ -7,22 +7,25 @@ import { SetCachedSelectedMUnicipalities } from '../../functions/MunicipalitiesA
 import { GetCachedSelectedMunicipalities } from '../../functions/MunicipalitiesAPIFunctions';
 
 
-
 interface SearchBoxProps {
   value: Municipalities | null;
   onChange: (newValue: Municipalities | null) => void;
+  label: string;
+  placeholder: string;
 }
 
 
-export default function SearchBoxAutoComponent({ value, onChange }: SearchBoxProps) {
+export default function SearchBoxAutoComponent({ value, onChange, label, placeholder }: SearchBoxProps) {
   const [options, setOptions] = useState<Municipalities[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("Buscando municípios...");
       setLoading(true);
       try {
         const data = await GetAllMunicipalities();
+        console.log("Dados recebidos:", data);
         setOptions(Array.isArray(data) ? data : []); 
       } catch (err) {
         console.error("Falha ao buscar municípios:", err);
@@ -56,7 +59,7 @@ export default function SearchBoxAutoComponent({ value, onChange }: SearchBoxPro
             mt: 1,
             boxShadow: '0px 4px 10px rgba(0,0,0,0.5)',
             border: 'var(--border-color) solid 1px',
-            borderRadius: '4px',
+            borderRadius: '6px',
           }
         },
         listbox: {
@@ -71,7 +74,7 @@ export default function SearchBoxAutoComponent({ value, onChange }: SearchBoxPro
               backgroundColor: 'var(--backgound-color)',
             },
             '&:hover': {
-              backgroundColor: 'var(--primary-color)',
+                backgroundColor: 'var(--primary-color)',
                 color: 'var(--text-color)',
               },
             }
@@ -83,37 +86,42 @@ export default function SearchBoxAutoComponent({ value, onChange }: SearchBoxPro
           }
         }
       }}
-      renderInput={(params) => <TextField {...params} label="Pesquisar Cidade" sx={{
-            '& .MuiOutlinedInput-input': {
-              color: 'var(--text-color)',
+      renderInput={(params) => <TextField {...params} 
+        label= {label} 
+        placeholder= {placeholder}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        sx={{
+          marginTop: '10px',
+          '& .MuiOutlinedInput-input': {
+            color: 'var(--text-color)',
+          },
+          '& .MuiSvgIcon-root': {
+            color: 'var(--border-color)',
+          },
+          '& .MuiOutlinedInput-root': {
+            height: '45px',
+            backgroundColor: 'var(--container-bg)',
+            '& fieldset': {
+              borderColor: 'var(--border-color)',
             },
-            '& .MuiSvgIcon-root': {
-              color: 'var(--border-color)',
+            '&:hover fieldset': {
+              borderColor: 'var(--primary-color)',
             },
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'var(--container-bg)',
-              '& fieldset': {
-                borderColor: 'var(--border-color)',
-              },
-              '&:hover fieldset': {
-                borderColor: 'var(--primary-color)',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: 'var(--primary-color)',
-              },
+            '&.Mui-focused fieldset': {
+              borderColor: 'var(--primary-color)',
             },
-            '& .MuiInputLabel-root': {
-              color: 'var(--text-color)',
-            },
-            '& .MuiInputLabel-root.Mui-focused': {
-                color: 'var(--primary-color)',
-            },
-          }}
-          
-        
+          },
+          '& .MuiInputLabel-root': {
+            color: 'var(--text-color)',
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+          color: 'var(--primary-color)',
+          },
+        }}
         />}
     />
     </>
   );
 }
-

@@ -18,19 +18,27 @@ body {
     width: 100%;
     max-width: 500px;
     box-sizing: border-box;
-    justify-content: center;
-    align-items: center;
 }
 
-.search-cnl-container {
+.container form {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 5px;
+    gap: 10px;
 }
 
-.search-cnl-container h3 {
-    margin: 0;
-    color: var(--text-color);
+.section-container {
     display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.section-container p {
+    font-size: 18px;
+    margin: 0px;
+    font-weight: 400;
+}
+
+.line {
+    border-bottom: var(--border-color) 1px solid;
+    margin-top: 10px;
 }
