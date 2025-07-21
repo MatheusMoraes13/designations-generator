@@ -25,7 +25,6 @@ export default function SearchBoxAutoComponent({ value, onChange, label, placeho
       setLoading(true);
       try {
         const data = await GetAllMunicipalities();
-        console.log("Dados recebidos:", data);
         setOptions(Array.isArray(data) ? data : []); 
       } catch (err) {
         console.error("Falha ao buscar municípios:", err);

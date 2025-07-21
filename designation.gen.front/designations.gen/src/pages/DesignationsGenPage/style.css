@@ -20,6 +20,10 @@ body {
     box-sizing: border-box;
 }
 
+.container h1 {
+    margin: 0;
+}
+
 .container form {
     display: flex;
     flex-direction: column;

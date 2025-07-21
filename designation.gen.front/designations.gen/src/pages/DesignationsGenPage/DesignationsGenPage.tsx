@@ -6,31 +6,36 @@ import OutputDesignationBox from "../../components/OutputBoxComponent/OutPutDesi
 import GenerateAndCopyDesignationButton from "../../components/GenerateAndCopyDesignationButtonComponent/GenerateAndCopyButtonComponent";
 import { useState } from "react";
 import type { Municipalities } from "../../data/MunicipalitiesData";
-import type { Designation, DesignationResponse } from "../../data/DesignationsData";
+import type { DesignationResponse } from "../../data/DesignationsData";
 import { BaseURL } from "../../functions/DesignationsAPIFunction";
+import ActionAlert, { type ActionAlertProps } from "../../components/AlertsComponent/AlertsComponent";
 
 import './style.css';
 
 function DesignationsGenPage() {
 
   const [selectedMunicipality, setSelectedMunicipality] = useState<Municipalities | null>(null);
-  const [designation, setDesignation] = useState<Designation | null>(null);
   const [generatedDesignation, setGeneratedDesignation] = useState<DesignationResponse | null>(null);
+  const [alertInfo, setAlertInfo] = useState<Omit<ActionAlertProps, 'onClose'> | null>(null);
   const [contractId, setContractId] = useState('');
   const [circuitType, setCircuitType] = useState('IP'); 
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleCloseAlert = () => {
+    setAlertInfo(null);
+  };
+
   const handleGenerateClick = async () => {
-    // 1. Validar usando o estado
+    setAlertInfo(null);
+
     if (!selectedMunicipality || !contractId) {
-      alert("Por favor, selecione o município e preencha o ID do contrato.");
+      setAlertInfo({severity: 'warning', message: 'Por favor, preencha todos os campos.'});
       setGeneratedDesignation({ designation: "Preencha todos os campos!" });
       return;
     }
 
     setIsLoading(true);
 
-    // 2. Montar o corpo da requisição com dados do estado
     const requestBody = {
       cnl: selectedMunicipality.acronym,
       contractId: contractId.trim(),
@@ -38,7 +43,6 @@ function DesignationsGenPage() {
     };
 
     try {
-      // 3. Chamar a API
       const response = await fetch(`${BaseURL}/designations-generator`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -51,13 +55,13 @@ function DesignationsGenPage() {
 
       const finalDesignation = await response.text();
 
-      // 4. Atualizar o estado com o resultado e copiar
       setGeneratedDesignation({ designation: finalDesignation });
       await navigator.clipboard.writeText(finalDesignation);
-      alert("Designação gerada e copiada para a área de transferência!");
+      setAlertInfo({ severity: 'success', message: 'Designação gerada e copiada para a área de transferência!' });
 
     } catch (error) {
       console.error("Falha ao gerar designação:", error);
+      setAlertInfo({ severity: 'error', message: 'Falha ao gerar designação. Verifique o console.' });
       setGeneratedDesignation({ designation: "Erro ao gerar designação." });
     } finally {
       setIsLoading(false);
@@ -66,10 +70,19 @@ function DesignationsGenPage() {
 
   return (
     <div className="container">
+      {alertInfo && (
+        <ActionAlert
+          severity={alertInfo.severity}
+          message={alertInfo.message}
+          onClose={handleCloseAlert}
+        />
+      )}
+
         <header>
             <h2>Gerador de Designação</h2>
         </header>
       <form className="designation-form">
+        
         <div className= "section-container">
           <p>Selecione o município:</p>
           <SearchBoxAutoComponent
