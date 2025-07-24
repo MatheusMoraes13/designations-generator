@@ -1,14 +1,16 @@
+import GenerateAndCopyDesignationButton from "../../components/GenerateAndCopyDesignationButtonComponent/GenerateAndCopyButtonComponent";
 import OutputCNLBox from "../../components/OutputBoxComponent/OutputMunicipalitiesBoxComponent";
 import SearchBoxAutoComponent from "../../components/SearchBocAutoComponent/SearchBoxAutoComponent";
-import InputBox from "../../components/InputComponent/InputComponent";
 import SelectTextFields from "../../components/SelectCircuitTypeComponent/SelectCircuitTypeComponent";
 import OutputDesignationBox from "../../components/OutputBoxComponent/OutPutDesignationBoxComponent";
-import GenerateAndCopyDesignationButton from "../../components/GenerateAndCopyDesignationButtonComponent/GenerateAndCopyButtonComponent";
-import { useState } from "react";
-import type { Municipalities } from "../../data/MunicipalitiesData";
-import type { DesignationResponse } from "../../data/DesignationsData";
-import { BaseURL } from "../../functions/DesignationsAPIFunction";
+import InputBox from "../../components/InputComponent/InputComponent";
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 import ActionAlert, { type ActionAlertProps } from "../../components/AlertsComponent/AlertsComponent";
+import type { DesignationResponse } from "../../data/DesignationsData";
+import type { Municipalities } from "../../data/MunicipalitiesData";
+import { BaseURL } from "../../functions/DesignationsAPIFunction";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 import './style.css';
 
@@ -20,6 +22,7 @@ function DesignationsGenPage() {
   const [contractId, setContractId] = useState('');
   const [circuitType, setCircuitType] = useState('IP'); 
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleCloseAlert = () => {
     setAlertInfo(null);
@@ -69,66 +72,65 @@ function DesignationsGenPage() {
   };
 
   return (
+    <>
+    <button className="return-menu"
+      onClick={() => { navigate('/'); } }>
+      <KeyboardReturnIcon />
+    </button>
     <div className="container">
-      {alertInfo && (
-        <ActionAlert
-          severity={alertInfo.severity}
-          message={alertInfo.message}
-          onClose={handleCloseAlert}
-        />
-      )}
+        {alertInfo && (
+          <ActionAlert
+            severity={alertInfo.severity}
+            message={alertInfo.message}
+            onClose={handleCloseAlert} />
+        )}
 
         <header>
-            <h2>Gerador de Designação</h2>
+          <h2>Gerador de Designação</h2>
         </header>
-      <form className="designation-form">
-        
-        <div className= "section-container">
-          <p>Selecione o município:</p>
-          <SearchBoxAutoComponent
-            label= "Cidade:"
-            placeholder="Digite o nome da cidade"
-            value={selectedMunicipality}
-            onChange={setSelectedMunicipality}
-          />
-          <OutputCNLBox 
-            municipality={selectedMunicipality}
-            label="CNL:"
-            placeholder="CNL selecionado"
-           />
-        </div>
-        <div className="line"/>
-        <div className="section-container">
-          <p>ID contrato:</p>
-          <InputBox 
-            label="ID do contrato:"
-            placeholder="Digite o ID do Contrato"
-            onChange={(e) => setContractId(e.target.value)}
-          />
-        </div>
-        <div className="line"/>
-        <div className="section-container">
-          <p>Tipo de circuito:</p>
-          <SelectTextFields
-            value={circuitType}
-            onChange={(e) => setCircuitType(e.target.value)}
-          />
-        </div>
-        <div className="line"/>
-        <div className="section-container">
-          <p>Designação:</p>
-          <OutputDesignationBox
-            designation={generatedDesignation}
-            label="Designação:"
-            placeholder="Designação gerada"
-          />
-          <GenerateAndCopyDesignationButton
-            onClick={handleGenerateClick}
-            isLoading={isLoading}
-          />
-        </div>
-      </form>
-    </div>
+        <form className="designation-form">
+
+          <div className="section-container">
+            <p>Selecione o município:</p>
+            <SearchBoxAutoComponent
+              label="Cidade:"
+              placeholder="Digite o nome da cidade"
+              value={selectedMunicipality}
+              onChange={setSelectedMunicipality} />
+            <OutputCNLBox
+              municipality={selectedMunicipality}
+              label="CNL:"
+              placeholder="CNL selecionado" />
+          </div>
+          <div className="line" />
+          <div className="section-container">
+            <p>ID contrato:</p>
+            <InputBox
+              label="ID do contrato:"
+              placeholder="Digite o ID do Contrato"
+              onChange={(e) => setContractId(e.target.value)} />
+          </div>
+          <div className="line" />
+          <div className="section-container">
+            <p>Tipo de circuito:</p>
+            <SelectTextFields
+              value={circuitType}
+              onChange={(e) => setCircuitType(e.target.value)} />
+          </div>
+          <div className="line" />
+          <div className="section-container">
+            <p>Designação:</p>
+            <OutputDesignationBox
+              designation={generatedDesignation}
+              label="Designação:"
+              placeholder="Designação gerada" />
+            <GenerateAndCopyDesignationButton
+              onClick={handleGenerateClick}
+              isLoading={isLoading} />
+          </div>
+        </form>
+      </div>
+      </>
   );
 };
 
