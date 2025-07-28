@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ReportsService {
@@ -49,9 +51,43 @@ public class ReportsService {
         Tesseract tess4j = new Tesseract();
         tess4j.setDatapath(TESSDATA_PATH);
         tess4j.setLanguage("por");
-        tess4j.setPageSegMode(3);
+        tess4j.setPageSegMode(6);
 
         String result = tess4j.doOCR(resizedImage);
+        result = normalizeData(result);
         System.out.println("Resultado OCR:\n" + result);
     }
+
+    private String normalizeData(String input) {
+        System.out.println("Texto recebido para regex:\n" + input);
+        String regex = "=\\s*([^:]+):\\s*([^:]+):\\s*([\\d.,]+\\s?kB)\\s+([\\d.,]+\\s?kB)\\s+([\\d.,]+\\s?kB)\\s+([\\d.,]+\\s?kB)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+
+        StringBuilder output = new StringBuilder();
+
+        while (matcher.find()) {
+            String equipamento = matcher.group(1).trim();
+            String interfaceDesc = matcher.group(2).trim();
+            String last = matcher.group(3).trim();
+            String min = matcher.group(4).trim();
+            String max = matcher.group(5).trim();
+            String percentile95 = matcher.group(6).trim();
+
+            String result = String.format(
+                    "Equipamento: %s\nInterface/Desc: %s\nLast: %s\nMin: %s\nMax: %s\n95th: %s\n",
+                    equipamento, interfaceDesc, last, min, max, percentile95
+            );
+            output.append("------------------------\n").append(result).append("------------------------\n");
+        }
+
+        if (output.length() == 0) {
+            System.out.println("Nenhuma correspondência encontrada.");
+        } else {
+            System.out.println(output);
+        }
+
+        return output.toString();
+    }
+
 }
