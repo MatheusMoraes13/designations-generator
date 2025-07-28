@@ -1,2 +1,4 @@
 # designations-generator
-A simple application to generate designations for a provider's circuits
+ Sistema para a realizar a geração de designações padronizadas para ciruitos.
+ O sistema também permite cadastrar e visualizar dos Codigos Nacionais de Localidades (CNL).
+ 
