@@ -14,7 +14,6 @@ interface SearchBoxProps {
   placeholder: string;
 }
 
-
 export default function SearchBoxAutoComponent({ value, onChange, label, placeholder }: SearchBoxProps) {
   const [options, setOptions] = useState<Municipalities[]>([]);
   const [loading, setLoading] = useState(false);
