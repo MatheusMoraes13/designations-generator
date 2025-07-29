@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -25,7 +26,7 @@ public class MunicipalitiesService {
         List<Municipalities> foundMunicipalities = municipalitiesRepository.findAll();
 
         if(foundMunicipalities.isEmpty()){
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Aviso: Nenhum município encontrado.");
         }
 
         return ResponseEntity.ok(foundMunicipalities);
@@ -44,7 +45,11 @@ public class MunicipalitiesService {
 
         for (Municipalities m : uniqueMunicipalitiesList){
             List<Municipalities> foundMunicipalities = municipalitiesRepository.findByName(m.getName());
-            municipalitiesRepository.save(m);
+            try {
+                municipalitiesRepository.save(m);
+            } catch (JpaSystemException e){
+                System.out.println("Erro ao salvar o municipio: " + m.getName());
+            }
         }
 
         return ResponseEntity.ok().body("Lista de municípios cadastrada com sucesso!");

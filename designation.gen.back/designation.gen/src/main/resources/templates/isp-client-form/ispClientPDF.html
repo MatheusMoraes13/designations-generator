@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="port">
+<head>
+    <meta charset="UTF-8" />
+    <title>Certificado</title>
+    <link rel="stylesheet" href="ispClientPDF.css">
+</head>
+<body>
+    <div class="first-page">
+        <div class="header">
+            <img src="./images/unnamed.jpg"/>
+        </div>
+        <div class="title">
+            <h1>Relatório de Tráfego<br/>e Disponibilidade de Link</h1>
+        </div>
+        <div class="report-main-body">
+            <div class="contract-informations">
+                <p>
+                    Cliente: {{CLIENT_NAME}}<br/>
+                    Data inicial: {{INITIAL_DATE}}<br/>
+                    Data final: {{FINAL_DATE}}<br/>
+                    Link Monitorado: {{CLIENT_LINK}}<br/>
+                    Designação: {{CIRCUIT_DESIGNATION}}<br/>
+                    Valor MB: {{VALUE_MB}}
+                </p>
+            </div>
+            <div class="report-table">
+                <table class="table-summary">
+                    <caption>Resumo de Métricas</caption>
+                    <thead>
+                        <tr>
+                            <th>Métrica</th>
+                            <th>Valor Total</th>
+                            <th>Unidade</th>
+                            <th>Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Interface</td>
+                            <td>{{CIRCUIT_VLAN}}</td>
+                            <td>Vlan</td>
+                            <td>Interface monitorada</td>
+                        </tr>
+                        <tr>
+                            <td>Tráfego 95%</td>
+                            <td>{{PERCENTILE}}</td>
+                            <td>{{PERCENTILE_UNIT}}</td>
+                            <td>Valor em megas 95 percentis.</td>
+                        </tr>
+                        <tr>
+                            <td>Valor total</td>
+                            <td>{{TOTAL_VALUE}}</td>
+                            <td>R$</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer-first-page">
+            <p>
+                Av. Weyne Cavalcante, 660, Apto 4 - Centro - CEP 68.350-061 - Canaã dos Carajás - PA<br/>
+                Fones: (94)3199-1000 / 0800 111 4950 / Email: comercial@coelhotecnologia.com.br
+            </p>
+        </div>
+    </div>
+    <div class="second-page">
+        <div class="header">
+            <img src="./images/unnamed.jpg"/>
+        </div>
+        <div class="report-secondary-body">
+        <div class="traffic-image">
+            <img src="./images/traffic.png"/>
+        </div>
+        <div class="end-message">
+            <p>
+                Atenciosamente,<br/>
+                Bruno Dantas<br/>
+                Gerente de Redes<br/>
+                NOC Coelho Tecnologia<br/>
+                +55 94 8419-7398<br/>
+                noc@coelhotecnologia.com.br
+            </p>
+        </div>
+        </div>
+        <div class="footer-second-page">
+            <p>
+                Av. Weyne Cavalcante, 660, Apto 4 - Centro - CEP 68.350-061 - Canaã dos Carajás - PA<br/>
+                Fones: (94)3199-1000 / 0800 111 4950 / Email: comercial@coelhotecnologia.com.br
+            </p>
+        </div>
+    </div>
+</body>
+</html>

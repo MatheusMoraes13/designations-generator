@@ -23,4 +23,9 @@ public class ReportsController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping
+    public ResponseEntity<?> generateReportPdf(){
+        return reportsService.genReportPdf();
+    }
+
 }
