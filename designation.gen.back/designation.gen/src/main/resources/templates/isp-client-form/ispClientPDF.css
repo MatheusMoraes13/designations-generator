@@ -30,24 +30,41 @@ body {
     align-self: center;
 }
 
+.header-second-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    text-align: center;
+}
+
+.header-second-page img {
+    display: flex;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+    align-self: center;
+}
+
 .title {
     text-align: center;
-    font-size: 8px;
-    margin-bottom: 20px;
+    font-size: 20px;
+    margin-bottom: 10px;
 }
 
 .title h1 {
-    font-size: 11px;
+    font-size: 16px;
     margin: 0;
 }
 
 .report-main-body {
-    padding: 60px;
-    padding-bottom: 80px;
+    padding: 40px;
+    padding-bottom: 50px;
 }
 
 .contract-informations {
-    font-size: 12px;
+    font-size: 16px;
     margin-bottom: 20px;
     line-height: 1.5;
 }
@@ -57,7 +74,7 @@ body {
 }
 
 .table-summary {
-    font-size: 12px;
+    font-size: 16px;
     width: 100%;
     border-collapse: collapse;
     text-align: left;
@@ -83,7 +100,7 @@ body {
     display: flex;
     width: 100%;
     text-align: center;
-    font-size: 10px;
+    font-size: 14px;
     line-height: 1.4;
     margin-top: 130px;
 }
@@ -92,19 +109,19 @@ body {
     display: flex;
     width: 100%;
     text-align: center;
-    font-size: 10px;
+    font-size: 14px;
     line-height: 1.4;
 }
 
 .second-page {
     page-break-before: always;
-    padding-bottom: 80px;
+    padding-bottom: 60px;
 }
 
 .traffic-image {
     width: 100%;
     text-align: center;
-    margin: 10px 0;
+    margin: 0;
 }
 
 .traffic-image img {
@@ -114,14 +131,13 @@ body {
 }
 
 .report-secondary-body {
-    padding: 60px;
-    padding-bottom: 20px;
+    padding: 20px;
+    padding-bottom: 0;
 }
-
 .end-message {
-    font-size: 11px;
+    font-size: 16px;
     text-align: left;
-    margin-top: 20px;
+    margin-top: 10px;
     line-height: 1.5;
     margin-bottom: 0;
 }
