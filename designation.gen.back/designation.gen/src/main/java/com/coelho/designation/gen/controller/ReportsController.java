@@ -1,5 +1,6 @@
 package com.coelho.designation.gen.controller;
 
+import com.coelho.designation.gen.dto.ReportRequestInformationDTO;
 import com.coelho.designation.gen.service.ReportsService;
 import lombok.AllArgsConstructor;
 import net.sourceforge.tess4j.TesseractException;
@@ -17,10 +18,10 @@ public class ReportsController {
 
     ReportsService reportsService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> generateReport(@RequestParam("archive") MultipartFile trafficImage) throws TesseractException, IOException {
-        return reportsService.genReportPdf(trafficImage);
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<?> generateReport(
+            @RequestPart("archive") MultipartFile trafficImage,
+            @RequestPart("reportRequestInformationDTO") ReportRequestInformationDTO reportRequestInformationDTO) throws TesseractException, IOException {
+        return reportsService.genReportPdf(trafficImage, reportRequestInformationDTO);
     }
-
-
 }

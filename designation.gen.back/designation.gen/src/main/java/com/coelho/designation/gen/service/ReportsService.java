@@ -1,6 +1,7 @@
 package com.coelho.designation.gen.service;
 
 import com.coelho.designation.gen.dto.InterfaceInformationDTO;
+import com.coelho.designation.gen.dto.ReportRequestInformationDTO;
 import com.lowagie.text.DocumentException;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -16,8 +17,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -29,40 +37,48 @@ public class ReportsService {
     private static final String TESSDATA_PATH = "C:/Program Files/Tesseract-OCR/tessdata/";
     private static final String IMAGES_REPOSITORY_PATH = "C:/storage/images/images-to-read/";
     private static final String LIBRARY_BASE_PATH = "library/";
-    private static final String TEMPLATE_BASE_PATH = "src/main/resources/templates/isp-client-form/";
+    private static final String ISP_TEMPLATE_BASE_PATH = "src/main/resources/templates/isp-client-form/";
+    private static final String TRAFFIC_IMAGE_ISP_PATH = "src/main/resources/templates/isp-client-form/images/traffic.png";
+
 /*
 Função responsável por realizar a leitura da imagem, através do OCR e extrair as informações do texto, com a utlização
 da função de normalização dos dados.
 */
-
-    public ResponseEntity<?> genReportPdf(MultipartFile trafficImage) throws TesseractException, IOException {
+    public ResponseEntity<?> genReportPdf(MultipartFile trafficImage, ReportRequestInformationDTO reportRequestInformation) throws TesseractException, IOException {
         InterfaceInformationDTO dataOfImage = readImage(trafficImage);
         File baseDir = new File(LIBRARY_BASE_PATH);
         checkPdfDirectory(baseDir);
 
         try {
-            String BASE_OUTPUT_URL = new File(TEMPLATE_BASE_PATH).toURI().toURL().toString();
-            String htmlContent = new String(Files.readAllBytes(Paths.get(TEMPLATE_BASE_PATH + "ispClientPDF.html")));
+            String BASE_OUTPUT_URL = new File(ISP_TEMPLATE_BASE_PATH).toURI().toURL().toString();
+            String htmlContent = new String(Files.readAllBytes(Paths.get(ISP_TEMPLATE_BASE_PATH + "ispClientPDF.html")));
             ITextRenderer renderer = new ITextRenderer();
 
-            String outPutFile = "library/teste-report.pdf";
+            String outPutFile = "library/" + genReportName(reportRequestInformation.clientName()) + ".pdf";
 
             Pattern pattern = Pattern.compile("\\{\\{(.+?)\\}\\}");
             StringBuilder resultHtml = new StringBuilder();
             Matcher matcher = pattern.matcher(htmlContent);
             Map<String, String> replacements = new HashMap<>();
 
-            Float max = Float.valueOf(String.valueOf(dataOfImage.max()));
-            Float valueMb = 5.0F;
-            Float totalValueResult = 5 * (max * 1000);
-            String valueMbString = valueMb.toString();
-            String circuitDesignation = dataOfImage.equipment();
+            String clientName = reportRequestInformation.clientName();
+            String initialDate = reportRequestInformation.initialDate();
+            String finalDate = reportRequestInformation.finalDate();
+            String clientLink = reportRequestInformation.clientLink();
+            String circuitDesignation = reportRequestInformation.circuitDesignation();
+            String valueMb = reportRequestInformation.valueMb();
+            String circuitVlan = reportRequestInformation.circuitVlan();
             String percentile = dataOfImage.percentile();
             String percentileUnit = dataOfImage.percentileUnit();
-            String totalValue = totalValueResult.toString();
+            String totalValue = calcTotalValue(valueMb, percentile, percentileUnit);
 
+            replacements.put("{{CLIENT_NAME}}", clientName);
+            replacements.put("{{INITIAL_DATE}}", initialDate);
+            replacements.put("{{FINAL_DATE}}", finalDate);
+            replacements.put("{{CLIENT_LINK}}", clientLink);
             replacements.put("{{CIRCUIT_DESIGNATION}}", circuitDesignation);
-            replacements.put("{{VALUE_MB}}", valueMbString);
+            replacements.put("{{CIRCUIT_VLAN}}", circuitVlan);
+            replacements.put("{{VALUE_MB}}", valueMb);
             replacements.put("{{PERCENTILE}}", percentile);
             replacements.put("{{PERCENTILE_UNIT}}", percentileUnit);
             replacements.put("{{TOTAL_VALUE}}", totalValue);
@@ -112,22 +128,17 @@ da função de normalização dos dados.
         }
 
         /*
+        Realizando a modificação da imagem enviada na requisição, para que ela seja salva e utilizada pelo HTML, como
+        "traffic.png".
+        */
+        copyImageToHtml(trafficImagePNG, TRAFFIC_IMAGE_ISP_PATH);
+
+        /*
         Realizando o redimensionamento da print enviada para que melhore a acertifidade do OCR na hora de reconhecer
         os textos na imagem.
         */
-        BufferedImage originalImage = ImageIO.read(trafficImagePNG);
-        if (originalImage == null) {
-            throw new IOException("Imagem não pôde ser lida. Verifique o formato do arquivo.");
-        }
+        BufferedImage resizedImage = resizeImage(trafficImagePNG);
 
-        int width = originalImage.getWidth() * 2;
-        int height = originalImage.getHeight() * 2;
-        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D g = resizedImage.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.drawImage(originalImage, 0, 0, width, height, null);
-        g.dispose();
 
         /*
         Utilizando a biblioteca de reconhecimento Optico para a leitura da imagem e extração dos textos.
@@ -137,15 +148,17 @@ da função de normalização dos dados.
         tess4j.setLanguage("por");
         tess4j.setPageSegMode(6);
         String result = tess4j.doOCR(resizedImage);
+        System.out.println(result);
 
         /*
         Realizando a normalização dos dados recebidos pelo OCR e mapeando para um objeto de transferência de dados
         para que possa ser utilizado na criação do PDF.
         */
-        InterfaceInformationDTO resultInformation = normalizeData(result);
+        InterfaceInformationDTO resultInformation = normalizeOcrData(result);
         System.out.printf("Resultado OCR:\n%s%n", Objects.requireNonNull(resultInformation).toString());
         return resultInformation;
     }
+
 
 /*
 Metodo responsável por tealizar a normalização dos dados recebidos pelo OCR.
@@ -156,7 +169,7 @@ Dados extraidos:
 NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCENTIL.
 */
 
-    private InterfaceInformationDTO normalizeData(String ocrText) {
+    private InterfaceInformationDTO normalizeOcrData(String ocrText) {
         String[] lines = ocrText.split("\\R");
         InterfaceInformationDTO resultInterfaceInformation = null;
 
@@ -216,6 +229,10 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
         return resultInterfaceInformation;
     }
 
+
+/*
+Função para checar se o diretório padrão para armazenamento dos PDF's existe, e criar o diretório caso não exista.
+*/
     private static void checkPdfDirectory(File file) {
         if(file.exists()){
             System.out.println("Diretóorio de armazenamento dos certificados já existe!");
@@ -226,5 +243,88 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
                 System.out.println("Erro ao criar o diretório de armazenamento dos certificados: "+ e.getMessage());
             }
         }
+    }
+
+
+/*
+Função para realizar a cópia da imagem enviada na requisição para dentro do html, isso acontece devido ao arquivo ser
+copiado e renomeado para dentro do diretório o qual o HTML template irá ler o arquivo de imagem.
+*/
+    private static void copyImageToHtml(File fileToCopy, String pathDestination) throws IOException {
+        Path sourcePath = fileToCopy.toPath();
+        Path destinationPath = Paths.get(pathDestination);
+        Files.createDirectories(destinationPath.getParent());
+
+        try {
+            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Image copiada com sucesso para resources: " + destinationPath.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Erro ao copiar a Imagem enviada para resources: " + e.getMessage());
+            throw e;
+        }
+    }
+
+
+/*
+Função responsável pela realização do redimensionamento da imagem, para que o OCR possa realizar o reconhecimento
+correto das imagens.
+*/
+    private static BufferedImage resizeImage(File imageToResize) throws IOException {
+        BufferedImage originalImage = ImageIO.read(imageToResize);
+        if (originalImage == null) {
+            throw new IOException("Imagem não pôde ser lida. Verifique o formato do arquivo.");
+        }
+
+        int width = originalImage.getWidth() * 2;
+        int height = originalImage.getHeight() * 2;
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D g = resizedImage.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.drawImage(originalImage, 0, 0, width, height, null);
+        g.dispose();
+
+        return resizedImage;
+    }
+
+
+/*
+Função que irá realizar o calculo do valor a ser cobrado pelo circuito, com base no valor por MB do contrato, e realizar
+o calculo de acordo com a unidade de medida que foi apresentada no gráfico.
+*/
+    private String calcTotalValue (String valueMb, String percentile, String percentileUnit){
+
+        Float total;
+        Float percentileValue = Float.valueOf(percentile);
+        Float valueMbValue = Float.valueOf(valueMb);
+
+        if (percentileUnit.equalsIgnoreCase("GB")){
+            total = valueMbValue * (percentileValue * 1000);
+        } else if (percentileUnit.equalsIgnoreCase("KB")) {
+            total = valueMbValue * (percentileValue / 1000);
+        } else {
+            total = valueMbValue * percentileValue;
+        }
+
+        return  total.toString();
+    }
+
+
+/*
+Função para a geração do nome padronizado do PDF final.
+*/
+    private String genReportName (String clientName){
+        LocalDate currentDate = LocalDate.now();
+        Month currentMonth = currentDate.getMonth();
+        Year currentYear = Year.of(currentDate.getYear());
+        Locale brazilianLocale = new Locale("pt", "BR");
+
+        DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("yy", brazilianLocale);
+        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM", brazilianLocale);
+
+        String yearAbbreviation = currentDate.format(yearFormatter);
+        String monthAbbreviation = currentMonth.getDisplayName(java.time.format.TextStyle.SHORT, brazilianLocale).toUpperCase();
+
+        return String.format("RELATORIO %s %s%s", clientName, monthAbbreviation, yearAbbreviation);
     }
 }
