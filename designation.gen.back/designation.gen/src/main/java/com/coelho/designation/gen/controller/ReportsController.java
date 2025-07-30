@@ -19,13 +19,8 @@ public class ReportsController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> generateReport(@RequestParam("archive") MultipartFile trafficImage) throws TesseractException, IOException {
-        reportsService.readImage(trafficImage);
-        return ResponseEntity.ok().build();
+        return reportsService.genReportPdf(trafficImage);
     }
 
-    @GetMapping
-    public ResponseEntity<?> generateReportPdf(){
-        return reportsService.genReportPdf();
-    }
 
 }

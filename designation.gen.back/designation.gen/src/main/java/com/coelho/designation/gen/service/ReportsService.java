@@ -17,6 +17,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +27,7 @@ import java.util.regex.Pattern;
 public class ReportsService {
 
     private static final String TESSDATA_PATH = "C:/Program Files/Tesseract-OCR/tessdata/";
-    private static final String IMAGES_REPOSITORY_PATH = "storage/images/images-to-read/";
+    private static final String IMAGES_REPOSITORY_PATH = "C:/storage/images/images-to-read/";
     private static final String LIBRARY_BASE_PATH = "library/";
     private static final String TEMPLATE_BASE_PATH = "src/main/resources/templates/isp-client-form/";
 /*
@@ -33,7 +35,8 @@ Função responsável por realizar a leitura da imagem, através do OCR e extrai
 da função de normalização dos dados.
 */
 
-    public ResponseEntity<?> genReportPdf(){
+    public ResponseEntity<?> genReportPdf(MultipartFile trafficImage) throws TesseractException, IOException {
+        InterfaceInformationDTO dataOfImage = readImage(trafficImage);
         File baseDir = new File(LIBRARY_BASE_PATH);
         checkPdfDirectory(baseDir);
 
@@ -44,9 +47,41 @@ da função de normalização dos dados.
 
             String outPutFile = "library/teste-report.pdf";
 
+            Pattern pattern = Pattern.compile("\\{\\{(.+?)\\}\\}");
+            StringBuilder resultHtml = new StringBuilder();
+            Matcher matcher = pattern.matcher(htmlContent);
+            Map<String, String> replacements = new HashMap<>();
+
+            Float max = Float.valueOf(String.valueOf(dataOfImage.max()));
+            Float valueMb = 5.0F;
+            Float totalValueResult = 5 * (max * 1000);
+            String valueMbString = valueMb.toString();
+            String circuitDesignation = dataOfImage.equipment();
+            String percentile = dataOfImage.percentile();
+            String percentileUnit = dataOfImage.percentileUnit();
+            String totalValue = totalValueResult.toString();
+
+            replacements.put("{{CIRCUIT_DESIGNATION}}", circuitDesignation);
+            replacements.put("{{VALUE_MB}}", valueMbString);
+            replacements.put("{{PERCENTILE}}", percentile);
+            replacements.put("{{PERCENTILE_UNIT}}", percentileUnit);
+            replacements.put("{{TOTAL_VALUE}}", totalValue);
+
+            while (matcher.find()){
+                String key = matcher.group(1);
+                String value = replacements.get(String.format("{{%s}}", key));
+
+                if (value != null) {
+                    matcher.appendReplacement(resultHtml, Matcher.quoteReplacement(value));
+                } else {
+                    continue;
+                }
+            }
+            matcher.appendTail(resultHtml);
+
             try (FileOutputStream outputStream = new FileOutputStream(outPutFile)) {
 
-                renderer.setDocumentFromString(htmlContent, BASE_OUTPUT_URL);
+                renderer.setDocumentFromString(resultHtml.toString(), BASE_OUTPUT_URL);
                 renderer.layout();
                 renderer.createPDF(outputStream);
 
@@ -59,7 +94,7 @@ da função de normalização dos dados.
         }
     }
 
-    public void readImage(MultipartFile trafficImage) throws TesseractException, IOException {
+    public InterfaceInformationDTO readImage(MultipartFile trafficImage) throws TesseractException, IOException {
         /*
         Realizando o carregamento do arquivo, criando os diretórios de armazenamento e transformando o arquivo
         "MultipartFile" em um arquivo "File" para que possa ser utilizado pelo OCR para extração do texto.
@@ -109,6 +144,7 @@ da função de normalização dos dados.
         */
         InterfaceInformationDTO resultInformation = normalizeData(result);
         System.out.printf("Resultado OCR:\n%s%n", Objects.requireNonNull(resultInformation).toString());
+        return resultInformation;
     }
 
 /*
