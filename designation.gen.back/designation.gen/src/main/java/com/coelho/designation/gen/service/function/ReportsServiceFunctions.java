@@ -3,6 +3,7 @@ package com.coelho.designation.gen.service.function;
 import com.coelho.designation.gen.dto.InterfaceInformationDTO;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.imgscalr.Scalr;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,12 +33,13 @@ public class ReportsServiceFunctions {
     private static final String TRAFFIC_IMAGE_ISP_PATH = "src/main/resources/templates/isp-client-form/images/traffic.png";
     private static final String TESSDATA_PATH = "C:/Program Files/Tesseract-OCR/tessdata/";
     private static final String IMAGES_REPOSITORY_PATH = "C:/storage/images/images-to-read/";
+    private static final int TARGET_WIDTH = 2500;
+
 
 /*
 Função que será responsável por realizar a leitura do texto da imagem a partir do OCR, e retornar o DTO contendo os
 dados do circuitos que foram retirados da imagem.
 */
-
     public InterfaceInformationDTO readImage(MultipartFile trafficImage) throws TesseractException, IOException {
         /*
         Realizando o carregamento do arquivo, criando os diretórios de armazenamento e transformando o arquivo
@@ -55,17 +57,23 @@ dados do circuitos que foram retirados da imagem.
             throw ex;
         }
 
-        /*
-        Realizando a modificação da imagem enviada na requisição, para que ela seja salva e utilizada pelo HTML, como
-        "traffic.png".
-        */
-        copyImageToHtml(trafficImagePNG, TRAFFIC_IMAGE_ISP_PATH);
 
         /*
         Realizando o redimensionamento da print enviada para que melhore a acertifidade do OCR na hora de reconhecer
         os textos na imagem.
         */
-        BufferedImage resizedImage = resizeImage(trafficImagePNG);
+        BufferedImage resizedImage = preprocessImageForOcr(trafficImagePNG);
+        boolean success = ImageIO.write(resizedImage, "png", trafficImagePNG);
+        if (success) {
+            System.out.println("imagem salva.");
+        }
+
+
+        /*
+        Realizando a modificação da imagem enviada na requisição, para que ela seja salva e utilizada pelo HTML, como
+        "traffic.png".
+        */
+        copyImageToHtml(trafficImagePNG, TRAFFIC_IMAGE_ISP_PATH);
 
 
         /*
@@ -77,6 +85,7 @@ dados do circuitos que foram retirados da imagem.
         tess4j.setPageSegMode(6);
         String result = tess4j.doOCR(resizedImage);
         System.out.println(result);
+
 
         /*
         Realizando a normalização dos dados recebidos pelo OCR e mapeando para um objeto de transferência de dados
@@ -100,7 +109,6 @@ e assim alimentando o DTO que será retornado pela função.
 Dados extraidos:
 NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCENTIL.
 */
-
     public InterfaceInformationDTO normalizeOcrTrafficData(String ocrText) {
         String[] lines = ocrText.split("\\R");
         InterfaceInformationDTO resultInterfaceInformation = null;
@@ -164,26 +172,10 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
     }
 
 
-    /*
-    Função para checar se o diretório padrão para armazenamento dos PDF's existe, e criar o diretório caso não exista.
-    */
-    public void checkPdfDirectory(File file) {
-        if(file.exists()){
-            System.out.println("Diretóorio de armazenamento dos certificados já existe!");
-        } else {
-            try {
-                file.mkdir();
-            } catch (Exception e) {
-                System.out.println("Erro ao criar o diretório de armazenamento dos certificados: "+ e.getMessage());
-            }
-        }
-    }
-
-
-    /*
-    Função para realizar a cópia da imagem enviada na requisição para dentro do html, isso acontece devido ao arquivo ser
-    copiado e renomeado para dentro do diretório o qual o HTML template irá ler o arquivo de imagem.
-    */
+/*
+Função para realizar a cópia da imagem enviada na requisição para dentro do html, isso acontece devido ao arquivo ser
+copiado e renomeado para dentro do diretório o qual o HTML template irá ler o arquivo de imagem.
+*/
     public void copyImageToHtml(File fileToCopy, String pathDestination) throws IOException {
         Path sourcePath = fileToCopy.toPath();
         Path destinationPath = Paths.get(pathDestination);
@@ -199,33 +191,28 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
     }
 
 
-    /*
-    Função responsável pela realização do redimensionamento da imagem, para que o OCR possa realizar o reconhecimento
-    correto das imagens.
-    */
-    public BufferedImage resizeImage(File imageToResize) throws IOException {
+/*
+Função responsável pela realização do redimensionamento da imagem, para que o OCR possa realizar o reconhecimento
+correto das imagens.
+*/
+    public BufferedImage preprocessImageForOcr(File imageToResize) throws IOException {
         BufferedImage originalImage = ImageIO.read(imageToResize);
-        if (originalImage == null) {
+        if (originalImage == null || !imageToResize.getAbsolutePath().contains(".png")) {
             throw new IOException("Imagem não pôde ser lida. Verifique o formato do arquivo.");
         }
-
-        int width = originalImage.getWidth() * 2;
-        int height = originalImage.getHeight() * 2;
-        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D g = resizedImage.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.drawImage(originalImage, 0, 0, width, height, null);
-        g.dispose();
-
-        return resizedImage;
+        return Scalr.resize(
+                originalImage,
+                Scalr.Method.ULTRA_QUALITY,
+                Scalr.Mode.FIT_TO_WIDTH,
+                TARGET_WIDTH
+        );
     }
 
 
-    /*
-    Função que irá realizar o calculo do valor a ser cobrado pelo circuito, com base no valor por MB do contrato, e realizar
-    o calculo de acordo com a unidade de medida que foi apresentada no gráfico.
-    */
+/*
+Função que irá realizar o calculo do valor a ser cobrado pelo circuito, com base no valor por MB do contrato, e realizar
+o calculo de acordo com a unidade de medida que foi apresentada no gráfico.
+*/
     public String calcTotalValue (String valueMb, String percentile, String percentileUnit){
 
         float total;
@@ -244,9 +231,9 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
     }
 
 
-    /*
-    Função para a geração do nome padronizado do PDF final.
-    */
+/*
+Função para a geração do nome padronizado do PDF final.
+*/
     public String genReportName (String clientName){
         LocalDate currentDate = LocalDate.now();
         Month currentMonth = currentDate.getMonth();

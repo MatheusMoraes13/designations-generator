@@ -38,7 +38,7 @@ da função de normalização dos dados.
     public ResponseEntity<?> genReportPdf(MultipartFile trafficImage, ReportRequestInformationDTO reportRequestInformation) throws TesseractException, IOException {
         InterfaceInformationDTO dataOfImage = reportsFunctions.readImage(trafficImage);
         File baseDir = new File(LIBRARY_BASE_PATH);
-        reportsFunctions.checkPdfDirectory(baseDir);
+        Files.createDirectories(Paths.get(LIBRARY_BASE_PATH));
 
         try {
             String BASE_OUTPUT_URL = new File(ISP_TEMPLATE_BASE_PATH).toURI().toURL().toString();
@@ -81,6 +81,7 @@ da função de normalização dos dados.
                 if (value != null) {
                     matcher.appendReplacement(resultHtml, Matcher.quoteReplacement(value));
                 } else {
+                    System.out.println("Nenhuma correspondencia encontrada para: " + key);
                     continue;
                 }
             }
