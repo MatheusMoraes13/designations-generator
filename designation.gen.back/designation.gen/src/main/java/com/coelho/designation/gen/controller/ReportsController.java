@@ -12,16 +12,16 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/generate-report")
+@RequestMapping("/api/generate-report")
 @AllArgsConstructor
 public class ReportsController {
 
     ReportsService reportsService;
 
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(path = "/isp",consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> generateReport(
             @RequestPart("archive") MultipartFile trafficImage,
             @RequestPart("reportRequestInformationDTO") ReportRequestInformationDTO reportRequestInformationDTO) throws TesseractException, IOException {
-        return reportsService.genReportPdf(trafficImage, reportRequestInformationDTO);
+        return reportsService.genReportIspPdf(trafficImage, reportRequestInformationDTO);
     }
 }

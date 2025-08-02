@@ -1,6 +1,7 @@
 package com.coelho.designation.gen.service.function;
 
 import com.coelho.designation.gen.dto.InterfaceInformationDTO;
+import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.imgscalr.Scalr;
@@ -16,6 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Year;
@@ -25,7 +28,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Slf4j
 @Service
 public class ReportsServiceFunctions {
 
@@ -38,34 +41,35 @@ public class ReportsServiceFunctions {
 
 /*
 Função que será responsável por realizar a leitura do texto da imagem a partir do OCR, e retornar o DTO contendo os
-dados do circuitos que foram retirados da imagem.
+dados do circuito que foram retirados da imagem.
 */
     public InterfaceInformationDTO readImage(MultipartFile trafficImage) throws TesseractException, IOException {
         /*
         Realizando o carregamento do arquivo, criando os diretórios de armazenamento e transformando o arquivo
-        "MultipartFile" em um arquivo "File" para que possa ser utilizado pelo OCR para extração do texto.
+        "MultipartFile" num arquivo "File" para poder ser utilizado pelo OCR para extração do texto.
         */
+        log.info("Realizando a verificação dos diretórios padrões para a geração dos relatórios.");
         String originalFilename = Objects.requireNonNull(trafficImage.getOriginalFilename()).replaceAll("[^a-zA-Z0-9.\\-_]", "_");
         Files.createDirectories(Paths.get(IMAGES_REPOSITORY_PATH));
         File trafficImagePNG = new File(IMAGES_REPOSITORY_PATH + originalFilename);
-        System.out.println("Salvando imagem em: " + trafficImagePNG.getAbsolutePath());
+        log.info("Salvando a imagem de trafego em: {}", trafficImagePNG.getAbsolutePath());
 
         try {
             trafficImage.transferTo(trafficImagePNG);
         } catch (IOException ex) {
-            System.err.println("Erro ao salvar a imagem: " + ex.getMessage());
+            log.error("Erro ao salvar a imagem: {}", ex.getMessage());
             throw ex;
         }
 
 
         /*
-        Realizando o redimensionamento da print enviada para que melhore a acertifidade do OCR na hora de reconhecer
+        Realizando o redimensionamento do print enviado para melhorar a acertividade do OCR na hora de reconhecer
         os textos na imagem.
         */
         BufferedImage resizedImage = preprocessImageForOcr(trafficImagePNG);
         boolean success = ImageIO.write(resizedImage, "png", trafficImagePNG);
         if (success) {
-            System.out.println("imagem salva.");
+            log.info("Imagem de trafego, tratada, salva com sucesso.");
         }
 
 
@@ -84,29 +88,28 @@ dados do circuitos que foram retirados da imagem.
         tess4j.setLanguage("por");
         tess4j.setPageSegMode(6);
         String result = tess4j.doOCR(resizedImage);
-        System.out.println(result);
 
 
         /*
         Realizando a normalização dos dados recebidos pelo OCR e mapeando para um objeto de transferência de dados
-        para que possa ser utilizado na criação do PDF.
+        para poder ser utilizado na criação do PDF.
         */
         InterfaceInformationDTO resultInformation = normalizeOcrTrafficData(result);
         if (resultInformation == null) {
-            System.out.println("Erro ao realizar a normalização dos dados do OCR.");
+            log.error("Erro ao realizar a normalização dos dados do OCR.");
             return null;
         }
-        System.out.printf("Resultado OCR:\n%s%n", Objects.requireNonNull(resultInformation).toString());
+        log.info("Normalização dos dados realizada.");
         return resultInformation;
     }
 
 
 /*
-Metodo responsável por tealizar a normalização dos dados recebidos pelo OCR.
+Metodo responsável por realizar a normalização dos dados recebidos pelo OCR.
 Esse metodo irá realizar a captura dos dados da interface de Upload, presente na imagem, e extrair os dados
 e assim alimentando o DTO que será retornado pela função.
 
-Dados extraidos:
+Dados extraídos:
 NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCENTIL.
 */
     public InterfaceInformationDTO normalizeOcrTrafficData(String ocrText) {
@@ -153,18 +156,18 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
                             percentile95Value, percentile95Unit
                     );
 
-                    System.out.println("Dados de tráfego extraídos com sucesso da linha: " + line);
+                    log.debug("Dados de tráfego extraídos com sucesso da linha: {}",line);
                 } catch (Exception e) {
-                    System.err.printf("Erro ao processar a linha de dados: %s .\nErro: %s", line, e.getMessage());
+                    log.debug("Erro ao processar a linha de dados: {}. \nErro: {}", line, e.getMessage());
                 }
             }
         }
 
         if (resultInterfaceInformation == null) {
-            System.out.println("Nenhuma correspondência de dados de tráfego encontrada no texto do OCR.");
+            log.error("Nenhuma correspondência de dados de tráfego encontrada no texto do OCR.");
             return null;
         } else {
-            System.out.println("Dados de tráfego extraídos com sucesso.");
+            log.info("Dados de tráfego extraídos com sucesso!");
         }
 
 
@@ -181,11 +184,39 @@ copiado e renomeado para dentro do diretório o qual o HTML template irá ler o 
         Path destinationPath = Paths.get(pathDestination);
         Files.createDirectories(destinationPath.getParent());
 
+        String jpgFilePath = pathDestination.replace(".png", ".jpg");
+
         try {
             Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Image copiada com sucesso para resources: " + destinationPath.toAbsolutePath());
+            BufferedImage bufferedImage = ImageIO.read(destinationPath.toFile());
+            BufferedImage rgbImage = new BufferedImage(
+                    bufferedImage.getWidth(),
+                    bufferedImage.getHeight(),
+                    BufferedImage.TYPE_INT_RGB
+            );
+
+            /*
+            Redesenhando a imagem para RGB, para retirar a transparência da imagem PNG, pois o JPG não aceita
+            transparência.
+            */
+
+            Graphics2D g = rgbImage.createGraphics();
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, rgbImage.getWidth(), rgbImage.getHeight());
+            g.drawImage(bufferedImage, 0, 0, null);
+            g.dispose();
+
+            /*
+            Convertendo a imagem para JPJ, para ficar mais leve, impactando significativamente no tamanho do PDF
+            gerado, fazendo com que não ultrapasse os 200kb.
+            */
+
+            File jpgFile = new File(jpgFilePath);
+            ImageIO.write(rgbImage, "jpg", jpgFile);
+            log.info("Imagem adicionada com sucesso ao PDF!");
+
         } catch (IOException e) {
-            System.err.println("Erro ao copiar a Imagem enviada para resources: " + e.getMessage());
+            log.error("Erro ao adicionar a imagem ao PDF.", e);
             throw e;
         }
     }
@@ -198,6 +229,7 @@ correto das imagens.
     public BufferedImage preprocessImageForOcr(File imageToResize) throws IOException {
         BufferedImage originalImage = ImageIO.read(imageToResize);
         if (originalImage == null || !imageToResize.getAbsolutePath().contains(".png")) {
+            log.error("Imagem não pôde ser lida. Verifique o formato do arquivo enviado.");
             throw new IOException("Imagem não pôde ser lida. Verifique o formato do arquivo.");
         }
         return Scalr.resize(
@@ -210,8 +242,8 @@ correto das imagens.
 
 
 /*
-Função que irá realizar o calculo do valor a ser cobrado pelo circuito, com base no valor por MB do contrato, e realizar
-o calculo de acordo com a unidade de medida que foi apresentada no gráfico.
+Função que irá realizar o cálculo do valor a ser cobrado pelo circuito, com base no valor por MB do contrato, e realizar
+o calculo conforme a unidade de medida que foi apresentada no gráfico.
 */
     public String calcTotalValue (String valueMb, String percentile, String percentileUnit){
 
@@ -227,7 +259,15 @@ o calculo de acordo com a unidade de medida que foi apresentada no gráfico.
             total = valueMbValue * percentileValue;
         }
 
-        return Float.toString(total);
+        /*
+        Modificando a saida para conter apenas dois números após a vírgula, e ser separado por ","
+         */
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+        symbols.setDecimalSeparator(',');
+        symbols.setGroupingSeparator('.');
+        DecimalFormat df = new DecimalFormat("#,##0.00", symbols);
+
+        return df.format(total);
     }
 
 
@@ -246,6 +286,8 @@ Função para a geração do nome padronizado do PDF final.
         String yearAbbreviation = currentDate.format(yearFormatter);
         String monthAbbreviation = currentMonth.getDisplayName(java.time.format.TextStyle.SHORT, brazilianLocale).toUpperCase();
 
-        return String.format("RELATORIO %s %s%s", clientName, monthAbbreviation, yearAbbreviation);
+        String reportName = "RELATORIO " + clientName + " " + monthAbbreviation + yearAbbreviation;
+
+        return reportName.toUpperCase();
     }
 }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Designation } from "../data/DesignationsData";
 
-export const BaseURL = 'http://127.0.0.1:8080';
+export const BaseURL = 'http://127.0.0.1:8080/api';
 
 let cachedDesignations: Designation | null = null;
 let cachedGeneratedDesignation: Designation | null = null;
