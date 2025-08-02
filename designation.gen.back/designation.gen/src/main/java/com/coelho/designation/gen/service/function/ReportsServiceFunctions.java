@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.imgscalr.Scalr;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,10 +33,15 @@ import java.util.regex.Pattern;
 @Service
 public class ReportsServiceFunctions {
 
+    @Value("${TRAFFIC_IMAGE_ISP_PATH}")
+    private String TRAFFIC_IMAGE_ISP_PATH;
 
-    private static final String TRAFFIC_IMAGE_ISP_PATH = "src/main/resources/templates/isp-client-form/images/traffic.png";
-    private static final String TESSDATA_PATH = "C:/Program Files/Tesseract-OCR/tessdata/";
-    private static final String IMAGES_REPOSITORY_PATH = "C:/storage/images/images-to-read/";
+    @Value("${TESSDATA_PATH}")
+    private String TESSDATA_PATH;
+
+    @Value("${IMAGES_REPOSITORY_PATH}")
+    private String IMAGES_REPOSITORY_PATH;
+
     private static final int TARGET_WIDTH = 2500;
 
 
@@ -75,9 +81,10 @@ dados do circuito que foram retirados da imagem.
 
         /*
         Realizando a modificação da imagem enviada na requisição, para que ela seja salva e utilizada pelo HTML, como
-        "traffic.png".
+        "traffic.png" e deletando do diretório de armazenamento temporário de imagens.
         */
         copyImageToHtml(trafficImagePNG, TRAFFIC_IMAGE_ISP_PATH);
+        Files.delete(Paths.get(trafficImagePNG.getPath()));
 
 
         /*
@@ -180,6 +187,8 @@ Função para realizar a cópia da imagem enviada na requisição para dentro do
 copiado e renomeado para dentro do diretório o qual o HTML template irá ler o arquivo de imagem.
 */
     public void copyImageToHtml(File fileToCopy, String pathDestination) throws IOException {
+        log.info("Adicionando a imagem ao PDF.");
+
         Path sourcePath = fileToCopy.toPath();
         Path destinationPath = Paths.get(pathDestination);
         Files.createDirectories(destinationPath.getParent());
@@ -187,8 +196,13 @@ copiado e renomeado para dentro do diretório o qual o HTML template irá ler o 
         String jpgFilePath = pathDestination.replace(".png", ".jpg");
 
         try {
+            //Copiando a imagem para o diretório de imagens do template.
             Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+
+            //Criando a imagem no buffer para fazer a conversão de imagem .png para .jpg.
             BufferedImage bufferedImage = ImageIO.read(destinationPath.toFile());
+
+            //Criando uma imagem RGB no buffer para retirar a transparencia da imagem PNG
             BufferedImage rgbImage = new BufferedImage(
                     bufferedImage.getWidth(),
                     bufferedImage.getHeight(),
@@ -213,6 +227,7 @@ copiado e renomeado para dentro do diretório o qual o HTML template irá ler o 
 
             File jpgFile = new File(jpgFilePath);
             ImageIO.write(rgbImage, "jpg", jpgFile);
+            Files.delete(destinationPath);
             log.info("Imagem adicionada com sucesso ao PDF!");
 
         } catch (IOException e) {
@@ -251,6 +266,10 @@ o calculo conforme a unidade de medida que foi apresentada no gráfico.
         float percentileValue = Float.parseFloat(percentile);
         float valueMbValue = Float.parseFloat(valueMb);
 
+        /*
+        Realizando o cálculo do valor final a ser cobrado, com base na unidade de tráfego utilizada, realizando sempre a
+        conversão para megas e multiplicando pelo valor definido por mega.
+        */
         if (percentileUnit.equalsIgnoreCase("GB")){
             total = valueMbValue * (percentileValue * 1000);
         } else if (percentileUnit.equalsIgnoreCase("KB")) {
@@ -280,12 +299,15 @@ Função para a geração do nome padronizado do PDF final.
         Year currentYear = Year.of(currentDate.getYear());
         Locale brazilianLocale = new Locale("pt", "BR");
 
+        //Criando o padrão de formatação da data para mês e ano.
         DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("yy", brazilianLocale);
         DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM", brazilianLocale);
 
+        //Formatando a saida de data e mês para ficar apenas os dois algarismos finais do ano, e as 3 letras iniciais do mês.
         String yearAbbreviation = currentDate.format(yearFormatter);
         String monthAbbreviation = currentMonth.getDisplayName(java.time.format.TextStyle.SHORT, brazilianLocale).toUpperCase();
 
+        //Gerando o nome do arquivo PDF.
         String reportName = "RELATORIO " + clientName + " " + monthAbbreviation + yearAbbreviation;
 
         return reportName.toUpperCase();
