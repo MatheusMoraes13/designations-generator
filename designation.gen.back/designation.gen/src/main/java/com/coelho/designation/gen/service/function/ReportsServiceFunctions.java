@@ -95,6 +95,7 @@ dados do circuito que foram retirados da imagem.
         tess4j.setLanguage("por");
         tess4j.setPageSegMode(6);
         String result = tess4j.doOCR(resizedImage);
+        log.debug("Resultado retornado pelo OCR: {}", result);
 
 
         /*
@@ -124,38 +125,38 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
         InterfaceInformationDTO resultInterfaceInformation = null;
 
         Pattern dataPattern = Pattern.compile(
-                "(?i)^\\s*=?\\s*(.+?):" +
-//                        "(Download|Upload)\\s+" +
-                        "(Upload)\\s+" +
-                        "([0-9.,]+)\\s*(MB|KB|GB|TB)\\s+" +
-                        "([0-9.,]+)\\s*(MB|KB|GB|TB)\\s+" +
-                        "([0-9.,]+)\\s*(MB|KB|GB|TB)\\s+" +
-                        "([0-9.,]+)\\s*(MB|KB|GB|TB)"
+                "(?i).*?(Upload)\\s+" +                // grupo 1: tipo
+                        "([0-9.,]+)\\s*(MB|KB|GB|TB)\\s+" +               // grupo 2 e 3: last value + unidade
+                        "([0-9.,]+)\\s*(MB|KB|GB|TB)\\s+" +               // grupo 4 e 5: min value + unidade
+                        "([0-9.,]+)\\s*(MB|KB|GB|TB)\\s+" +               // grupo 6 e 7: max value + unidade
+                        "([0-9.,]+)\\s*(MB|KB|GB|TB)"                     // grupo 8 e 9: 95º + unidade
         );
+
+
 
         for (String line : lines) {
             if (line.trim().isEmpty()) {
                 continue;
             }
 
+            line = line.replaceAll("\\s+", " ").trim();
             Matcher dataMatcher = dataPattern.matcher(line);
 
             if (dataMatcher.find()) {
                 try {
 
-                    String equipment = dataMatcher.group(1).trim();
-                    String type = dataMatcher.group(2).trim();
-                    String lastValue = dataMatcher.group(3).trim();
-                    String lastUnit = dataMatcher.group(4).trim();
-                    String minValue = dataMatcher.group(5).trim();
-                    String minUnit = dataMatcher.group(6).trim();
-                    String maxValue = dataMatcher.group(7).trim();
-                    String maxUnit = dataMatcher.group(8).trim();
-                    String percentile95Value = dataMatcher.group(9).trim();
-                    String percentile95Unit = dataMatcher.group(10).trim();
+                    String equipment = null;
+                    String type = dataMatcher.group(1).trim();
+                    String lastValue = dataMatcher.group(2).trim();
+                    String lastUnit = dataMatcher.group(3).trim();
+                    String minValue = dataMatcher.group(4).trim();
+                    String minUnit = dataMatcher.group(5).trim();
+                    String maxValue = dataMatcher.group(6).trim();
+                    String maxUnit = dataMatcher.group(7).trim();
+                    String percentile95Value = dataMatcher.group(8).trim();
+                    String percentile95Unit = dataMatcher.group(9).trim();
 
                     resultInterfaceInformation = new InterfaceInformationDTO(
-                            equipment,
                             type,
                             lastValue, lastUnit,
                             minValue, minUnit,
@@ -163,9 +164,9 @@ NOME DO EQUIPAMENTO | TIPO DA INTERFACE (upload, download) | MAX | MIN | 95PERCE
                             percentile95Value, percentile95Unit
                     );
 
-                    log.debug("Dados de tráfego extraídos com sucesso da linha: {}",line);
+                    log.info("Dados de tráfego extraídos com sucesso da linha: {} \nDTO Retornado: {}",line, resultInterfaceInformation);
                 } catch (Exception e) {
-                    log.debug("Erro ao processar a linha de dados: {}. \nErro: {}", line, e.getMessage());
+                    log.error("Erro ao processar a linha de dados: {}. \nErro: {}", line, e.getMessage());
                 }
             }
         }

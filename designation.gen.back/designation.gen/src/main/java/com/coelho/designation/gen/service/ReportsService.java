@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.openpdf.pdf.ITextRenderer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +63,8 @@ da função de normalização dos dados.
             ITextRenderer renderer = new ITextRenderer();
 
             //Definindo o nome do arquivo final.
-            String outPutFile = "library/" + reportsFunctions.genReportName(reportRequestInformation.clientName()) + ".pdf";
+            String reportFileName = reportsFunctions.genReportName(reportRequestInformation.clientName()) + ".pdf";
+            String outPutFile = "library/" + reportFileName;
 
 
             /*
@@ -93,14 +97,13 @@ da função de normalização dos dados.
                     matcher.appendReplacement(resultHtml, Matcher.quoteReplacement(value));
                 } else {
                     log.warn("Nenhuma correspondência encontrada para: {}", key);
-                    continue;
                 }
             }
             matcher.appendTail(resultHtml);
-            log.debug("Normalização dos dados retornados pelo OCR foi finalizada!");
+            log.info("Normalização dos dados retornados pelo OCR foi finalizada!");
 
             try (FileOutputStream outputStream = new FileOutputStream(outPutFile)) {
-                log.debug("Gerando o relatório");
+                log.info("Gerando o relatório");
 
                 renderer.setDocumentFromString(resultHtml.toString(), BASE_OUTPUT_URL);
                 renderer.layout();
@@ -109,7 +112,15 @@ da função de normalização dos dados.
                 log.info("PDF de relatório gerado com sucesso para o cliente {}.", reportRequestInformation.clientName());
             }
 
-            return ResponseEntity.ok().build();
+            Path reportPdfPath = Paths.get(outPutFile);
+            byte[] reportPdfBytes = Files.readAllBytes(reportPdfPath);
+
+            HttpHeaders reportResponseHeaders = new HttpHeaders();
+            reportResponseHeaders.setContentType(MediaType.APPLICATION_PDF);
+            reportResponseHeaders.setContentDispositionFormData("attachment", reportFileName);
+            reportResponseHeaders.setContentLength(reportPdfBytes.length);
+
+            return new ResponseEntity<>(reportPdfBytes, reportResponseHeaders, HttpStatus.OK);
         } catch (IOException | DocumentException e){
             log.error("Erro ao gerar o relatório em PDF {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao gerar o relatório em PDF" + e.getMessage());

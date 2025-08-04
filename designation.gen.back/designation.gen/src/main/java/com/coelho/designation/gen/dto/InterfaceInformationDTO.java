@@ -1,7 +1,6 @@
 package com.coelho.designation.gen.dto;
 
 public record InterfaceInformationDTO(
-        String equipment,
         String interfaceType,
         String last,
         String lastUnit,
