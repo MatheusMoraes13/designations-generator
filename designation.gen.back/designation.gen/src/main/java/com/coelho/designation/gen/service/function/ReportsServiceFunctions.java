@@ -69,7 +69,7 @@ dados do circuito que foram retirados da imagem.
 
 
         /*
-        Realizando o redimensionamento do print enviado para melhorar a acertividade do OCR na hora de reconhecer
+        Realizando o redimensionamento do print enviado para melhorar a assertividade do OCR na hora de reconhecer
         os textos na imagem.
         */
         BufferedImage resizedImage = preprocessImageForOcr(trafficImagePNG);
@@ -81,7 +81,7 @@ dados do circuito que foram retirados da imagem.
 
         /*
         Realizando a modificação da imagem enviada na requisição, para que ela seja salva e utilizada pelo HTML, como
-        "traffic.png" e deletando do diretório de armazenamento temporário de imagens.
+        "traffic.png" e apagando do diretório de armazenamento temporário de imagens.
         */
         copyImageToHtml(trafficImagePNG, TRAFFIC_IMAGE_ISP_PATH);
         Files.delete(Paths.get(trafficImagePNG.getPath()));
