@@ -6,7 +6,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-@Entity
 public class ClientCircutiIsp implements ClientCircuit{
     @Override
     public String CalcTotalValue(String valueMb, String usageValue, String usageUnit) {
