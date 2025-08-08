@@ -1,8 +1,8 @@
 FROM eclipse-temurin:21-jre-alpine
 
-WORKDIR /app
+WORKDIR /clh-manager/back-end
 
-COPY ./*.jar app.jar
+COPY target/*.jar app.jar
 
 EXPOSE 8080
 
