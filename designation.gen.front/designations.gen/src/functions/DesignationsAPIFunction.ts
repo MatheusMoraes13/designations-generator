@@ -23,12 +23,16 @@ export const SetCachedGeneratedDesignation = (designation: Designation | null) =
 }
 
 export const GetCachedGeneratedDesignation = async () => {
-    try {
-        const response = await axios.post(`${BaseURL}/designations-generator`, cachedDesignations);
-        const DesignationResponse = response.data as JSON;
-        return DesignationResponse;
-    } catch (error: any) {
-        console.error('Failed to generate designation:', error);
-        throw error;
-    }
+  if (cachedGeneratedDesignation) {
+    console.log('Returning cached designation');
+    return cachedGeneratedDesignation;
+  }
+  try {
+    const response = await axios.post(`${BaseURL}/designations-generator`, cachedDesignations);
+    const DesignationResponse = response.data as JSON;
+    return DesignationResponse;
+  } catch (error: any) {
+    console.error('Failed to generate designation:', error);
+    throw error;
+  }
 };

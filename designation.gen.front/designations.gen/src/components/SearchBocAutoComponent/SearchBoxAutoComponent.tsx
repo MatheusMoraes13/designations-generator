@@ -39,7 +39,7 @@ export default function SearchBoxAutoComponent({ value, onChange, label, placeho
     <>
     <Autocomplete
       value={value}
-      onChange={(event: any, newValue: Municipalities | null) => {
+      onChange={(_event: any, newValue: Municipalities | null) => {
         onChange(newValue);
         SetCachedSelectedMUnicipalities(newValue);
         console.log(GetCachedSelectedMunicipalities());

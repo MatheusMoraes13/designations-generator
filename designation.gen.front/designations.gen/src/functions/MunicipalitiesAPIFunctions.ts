@@ -27,6 +27,10 @@ export const GetCachedSelectedMunicipalities = () => cachedSelectedMunicipality;
 
 
 export const GetAllMunicipalities = async () => {
+  if (cachedDataMunicipalities) {
+    console.log("Returning cached municipalities");
+    return cachedDataMunicipalities;
+  }
   try {
     const response = await axios.get(`${BaseURL}/municipalities`);
     return response.data;
