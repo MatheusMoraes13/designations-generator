@@ -8,7 +8,7 @@ interface GenerateButtonProps {
 export default function GenerateAndCopyDesignationButton({ onClick, isLoading }: GenerateButtonProps) {
   return (
     <button type="button" onClick={onClick} disabled={isLoading}>
-      {isLoading ? 'Gerando...' : 'Gerar e Copiar'}
+      {isLoading ? 'Gerando...' : 'Gerar Designação'}
     </button>
   );
 }

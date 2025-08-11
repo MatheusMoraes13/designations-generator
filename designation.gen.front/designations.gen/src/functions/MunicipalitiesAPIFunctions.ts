@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Municipalities } from '../data/MunicipalitiesData';
 
 
-export const BaseURL = 'http://localhost:8080/api';
+export const BaseURL = 'http://10.94.0.117:8080/api';
 
 let cachedDataMunicipalities: Municipalities[] | null = null;
 let cachedSelectedMunicipality: Municipalities | null = null;

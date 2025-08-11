@@ -59,8 +59,7 @@ function DesignationsGenPage() {
       const finalDesignation = await response.text();
 
       setGeneratedDesignation({ designation: finalDesignation });
-      await navigator.clipboard.writeText(finalDesignation);
-      setAlertInfo({ severity: 'success', message: 'Designação gerada e copiada para a área de transferência!' });
+      setAlertInfo({ severity: 'success', message: 'Designação gerada com sucesso!' });
 
     } catch (error) {
       console.error("Falha ao gerar designação:", error);
