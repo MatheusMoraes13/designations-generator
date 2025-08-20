@@ -1,4 +1,4 @@
-package com.coelho.designation.gen.model;
+package com.coelho.designation.gen.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,6 +15,9 @@ public class Municipalities {
 
     @Column(name = "nome município", nullable = false)
     private String name;
+
+    @Column(name = "estado do município", nullable = false)
+    private String state;
 
     @Column(name = "sigla CNL", nullable = false)
     private String acronym;

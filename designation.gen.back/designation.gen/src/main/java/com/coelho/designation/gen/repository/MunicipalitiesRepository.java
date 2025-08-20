@@ -1,6 +1,6 @@
 package com.coelho.designation.gen.repository;
 
-import com.coelho.designation.gen.model.Municipalities;
+import com.coelho.designation.gen.entity.Municipalities;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

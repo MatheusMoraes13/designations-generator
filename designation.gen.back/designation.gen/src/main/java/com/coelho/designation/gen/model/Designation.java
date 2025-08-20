@@ -1,11 +1,10 @@
 package com.coelho.designation.gen.model;
 
-import com.coelho.designation.gen.model.types.CircuitType;
+import com.coelho.designation.gen.types.CircuitType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Getter @Setter
 public class Designation {
     @Id

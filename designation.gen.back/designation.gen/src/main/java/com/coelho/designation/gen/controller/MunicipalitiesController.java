@@ -1,7 +1,7 @@
 package com.coelho.designation.gen.controller;
 
 import com.coelho.designation.gen.dto.SearchMunicipalitiesDTO;
-import com.coelho.designation.gen.model.Municipalities;
+import com.coelho.designation.gen.entity.Municipalities;
 import com.coelho.designation.gen.service.MunicipalitiesService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

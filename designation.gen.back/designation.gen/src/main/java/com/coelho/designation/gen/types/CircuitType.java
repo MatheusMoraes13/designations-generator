@@ -1,4 +1,4 @@
-package com.coelho.designation.gen.model.types;
+package com.coelho.designation.gen.types;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
