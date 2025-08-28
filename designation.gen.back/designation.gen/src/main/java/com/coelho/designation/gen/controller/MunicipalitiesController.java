@@ -30,4 +30,9 @@ public class MunicipalitiesController {
     public ResponseEntity<?> findMunicipalitiesByName(@RequestBody SearchMunicipalitiesDTO municipalitiesSearch){
         return municipalitiesService.findMunicipalitiesByName(municipalitiesSearch);
     }
+
+    @DeleteMapping("/{municipalitieId}")
+    public ResponseEntity<?> deleteMunicipalitie(@PathVariable String municipalitieId){
+        return municipalitiesService.deleteById(municipalitieId);
+    }
 }

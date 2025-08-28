@@ -53,14 +53,29 @@ public class MunicipalitiesService {
 
         for (Municipalities m : uniqueMunicipalitiesList){
             List<Municipalities> foundMunicipalities = municipalitiesRepository.findByName(m.getName());
-            try {
-                municipalitiesRepository.save(m);
-            } catch (JpaSystemException e){
-                System.out.println("Erro ao salvar o municipio: " + m.getName());
+            if (foundMunicipalities.isEmpty()) {
+                try {
+                    municipalitiesRepository.save(m);
+                } catch (JpaSystemException e) {
+                    System.out.println("Erro ao salvar o municipio: " + m.getName());
+                }
             }
         }
 
         return ResponseEntity.ok().body("Lista de municípios cadastrada com sucesso!");
+    }
+
+
+    /*
+    Funcão responsável pela remoção de municípios pelo ID
+     */
+    public ResponseEntity<?> deleteById(String municipaliteId){
+        try {
+            municipalitiesRepository.deleteById(Long.valueOf(municipaliteId));
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
