@@ -96,7 +96,7 @@ export default function VirtualizedStyledTable() {
         return (
             <React.Fragment>
                 <StyledTableCell align="left" style={{ borderRight: '1px solid var(--border-color)', textTransform: 'uppercase' }}>
-                    {row.name}
+                    {row.name + ' - ' + row.state}
                 </StyledTableCell>
                 <StyledTableCell align="center">
                     {row.acronym}

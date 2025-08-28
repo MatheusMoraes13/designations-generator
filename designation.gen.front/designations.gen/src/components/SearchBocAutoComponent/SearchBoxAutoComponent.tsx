@@ -47,7 +47,7 @@ export default function SearchBoxAutoComponent({ value, onChange, label, placeho
       getOptionKey={(option) => option.id}  
       options={options}
       loading={loading}
-      getOptionLabel={(option) => option.name + " - " + option.acronym }
+      getOptionLabel={(option) => option.name + " " + option.state +" - " + option.acronym }
       sx={{ width: 300 }}
       slotProps={{
         paper: {
